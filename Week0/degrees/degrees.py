@@ -93,8 +93,54 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    # TODO
-    raise NotImplementedError
+    # keep track of number of node already explored
+    num_explored = 0
+    # initilize the explore set
+    explore_set = set()
+
+    # create a node which indicates the starting (source)
+    start = Node(state = source, parent = None, action = None)
+    # create frontier with the starting node using Stack Frontier
+    frontier = QueueFrontier()
+    # add starting node to frontier
+    frontier.add(start)
+
+    # keep trying till find target node
+    while True:
+        # if frontier is empty then no solution
+        if frontier.empty():
+            return None
+        else:
+            # get node from frontier: Stack -> LIFO
+            node = frontier.remove()
+            num_explored += 1
+
+            # if found, trace back to the source
+            if node.state == target:
+                # list to store actions of each previous nodes
+                actions = []
+                # list to store states of each previous nodes
+                cells = []
+                while node.parent is not None:
+                    actions.append(node.action)
+                    cells.append(node.state)
+                    node = node.parent
+                actions.reverse()
+                cells.reverse()
+                solution = []
+                for index in range(len(actions)):
+                    solution.append((actions[index], cells[index]))
+                print(len(explore_set))
+                return solution
+            # if solution not found yet, explore the next node
+            # record the previous node in explore_set
+            explore_set.add(node.state)
+
+            # add neighbors node to frontier
+            for action, state in neighbors_for_person(node.state):
+                if not frontier.contains_state(state) and state not in explore_set:
+                    child = Node(state = state, parent = node, action = action)
+                    frontier.add(child)
 
 
 def person_id_for_name(name):
