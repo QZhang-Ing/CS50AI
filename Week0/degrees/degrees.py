@@ -130,16 +130,19 @@ def shortest_path(source, target):
                 solution = []
                 for index in range(len(actions)):
                     solution.append((actions[index], cells[index]))
-                print(len(explore_set))
+                print(f"Total Explored: {len(explore_set)}")
                 return solution
             # if solution not found yet, explore the next node
-            # record the previous node in explore_set
+            # record the previous node in explore_set (only person_id)
             explore_set.add(node.state)
 
             # add neighbors node to frontier
             for action, state in neighbors_for_person(node.state):
-                if not frontier.contains_state(state) and state not in explore_set:
+                if  state == None or  action == None:
+                    return None
+                elif not frontier.contains_state(state) and state not in explore_set:
                     child = Node(state = state, parent = node, action = action)
+                    # add child node to frontier
                     frontier.add(child)
 
 
