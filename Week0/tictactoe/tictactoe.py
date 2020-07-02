@@ -126,47 +126,52 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-
+    alpha = float("-inf") 
+    beta = float("inf") 
     # because X player has the fiset step so his goal is to maximize score; on the contrary, O player should minimize score
     current_player = player(board)
-    # X player: pick action that leads to the highest of minValue(result(state, action))
+    # X player (Max player): pick action that leads to the highest of minValue(result(state, action))
     if current_player == X:
         final_selection = None
-        v = float("-inf")
+        v = float("-inf") # alpha
         for action in actions(board):
-            temp_min_Value = minValue(result(board, action))
+            temp_min_Value = minValue(result(board, action), alpha, beta)
             # if find a temperary highest, update local variables 
-            if temp_min_Value > v:
-                v = temp_min_Value
-                final_selection = action
+            maxVal = max(v, temp_min_Value)
+            alpha = max(alpha,maxVal)
+            if beta <= alpha:
+                break
         return final_selection
     
     # O player: pick action that leads to the lowest of maxValue(result(state, action))
     if current_player == O:
         final_selection = None
-        v = float("inf")
+        v = float("inf") 
         for action in actions(board):
-            temp_max_Value = maxValue(result(board, action))
+            temp_max_Value = maxValue(result(board, action), alpha, beta)
             # if find a temperary highest, update local variables 
-            if temp_max_Value < v:
-                v = temp_max_Value
-                final_selection = action
+            minVal = min(v, temp_max_Value)
+            beta = min(beta, minVal)
+            if beta <= alpha:
+                break
         return final_selection
 
 # define function max-value
-def maxValue(board):
+def maxValue(board, alpha, beta):
     if terminal(board):
         return utility(board)
-    v = -float('inf')
     for action in actions(board):
-        v = max(v, minValue(result(board, action)))
-    return v
+        alpha = max(alpha, minValue(result(board, action), alpha, beta))
+        if beta <= alpha:
+            break
+    return alpha
 
 # define function min-value    
-def minValue(board):
+def minValue(board, alpha, beta):
     if terminal(board):
         return utility(board)
-    v = float('inf')
     for action in actions(board):
-        v = min(v, maxValue(result(board, action)))
-    return v
+        beta = min(beta, maxValue(result(board, action), alpha, beta))
+        if beta <= alpha:
+          break
+    return beta
