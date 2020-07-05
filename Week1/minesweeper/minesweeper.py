@@ -271,7 +271,8 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-
+        '''
+        Recursion approach
         i = random.randint(0, self.height - 1)
         j = random.randint(0, self.width - 1)
         random_move = (i,j)
@@ -279,6 +280,19 @@ class MinesweeperAI():
             return random_move
         else:
             self.make_random_move()
+        '''
+        # Generate random list for indexing
+        random_row = list(range(self.height))
+        random_col = list(range(self.width))
+        random.shuffle(random_row)
+        random.shuffle(random_col)
+        
+        for i in random_row:
+            for j in random_col:
+                random_move = (i, j)
+                if (not random_move in self.moves_made) and (not random_move in self.mines):
+                    return random_move
+        return None
 
     def check_upgrade(self):
         for sentence in self.knowledge:
