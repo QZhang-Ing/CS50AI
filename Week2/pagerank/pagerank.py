@@ -2,10 +2,11 @@ import os
 import random
 import re
 import sys
+import copy
+import numpy as np
 
 DAMPING = 0.85
 SAMPLES = 10000
-
 
 def main():
     if len(sys.argv) != 2:
@@ -57,7 +58,18 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+
+    probability = {}
+    num_links = len(corpus[page])
+    if num_links != 0:
+        for link in corpus:
+            probability[link] = (1 - damping_factor) / len(corpus)
+        for link in corpus[page]:
+            probability[link] += damping_factor / num_links
+    else: # if no outgoing links
+        for link in corpus:
+            probability[link] = 1 / len(corpus)
+    return probability
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,7 +81,26 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    probability = {}
+    for i in corpus:
+        probability[i] = 0
+    
+
+    # first sample random
+    page, _ = random.choice(list(corpus.items()))
+    probability[page] += (1/n)
+    for i in range(1, n):
+        temp_probability = transition_model(corpus, page, damping_factor)
+        next_page = []
+        weight = []
+        for key, value in temp_probability.items():
+            next_page.append(key)
+            weight.append(value)
+        
+        page = random.choices(next_page, weight)[0]
+        probability[page] += (1/n)
+    return probability
+    
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,8 +112,42 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+   
+    num = len(corpus)
 
+    # pages with no links
+    for page, links in corpus.items():
+        if len(links) == 0:
+            # links to every pages including itself
+            corpus[page] = list(corpus.keys())
+
+    # initialize
+    rank = {}
+    for i in corpus:
+        rank[i] = 1 / num
+    # initialize a reversed dictionary containing links to the certain page
+    copied = {}
+    for page in corpus:
+        copied[page] = []
+    for page, links in corpus.items():
+        for link in links:
+            copied[link].append(page)
+    previous = np.array(list(rank.values()))
+    while True:
+        for page in corpus:
+            sum_ = 0
+            # index through the reversed dic to find totla number linked to the page
+            for index in copied[page]:
+                sum_ += rank[index] / len(corpus[index])
+            # compute the ranking 
+            rank[page] = (1 - damping_factor) / num + damping_factor * sum_
+        now = np.array(list(rank.values()))
+        # if converge
+        if (abs(previous - now) <= 0.001).all():
+            return rank
+        else:
+            # update and implement new iteration based on current rank
+            previous = now
 
 if __name__ == "__main__":
     main()
